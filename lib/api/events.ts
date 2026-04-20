@@ -1,6 +1,7 @@
 import { Event } from "@/lib/types/event";
 import { EVENTS } from "@/lib/data/events";
 import { eventCache } from "@/lib/cache/eventCache";
+import { logger } from "@/lib/logger";
 
 // API layer — abstracts data access from the UI.
 // Components and pages import from here, never from lib/data directly.
@@ -25,15 +26,18 @@ export async function getAllEvents(): Promise<Event[]> {
     // In production, ISR alone may be sufficient here — the trade-off is simplicity
     // vs. protection against thundering herd during revalidation windows.
     const cached = eventCache.get("all_events") as Event[] | null;
-    if (cached) return cached;
+    if (cached) {
+      logger.info("getAllEvents cache hit");
+      return cached;
+    }
 
-    // Simulates network/DB latency.
-    // In production: DB query with connection pooling or external API fetch.
+    logger.info("getAllEvents cache miss — fetching from data source");
     await new Promise((res) => setTimeout(res, 100));
 
     eventCache.set("all_events", EVENTS);
     return EVENTS;
   } catch (e) {
+    logger.error("getAllEvents failed", { error: String(e) });
     throw new Error("Failed to fetch events", { cause: e });
   }
 }
@@ -42,17 +46,21 @@ export async function getEvent(slug: string): Promise<Event | null> {
   try {
     const cacheKey = `event_${slug}`;
     const cached = eventCache.get(cacheKey) as Event | null;
-    if (cached) return cached;
+    if (cached) {
+      logger.info("getEvent cache hit", { slug });
+      return cached;
+    }
 
-    // Simulates network/DB latency.
-    // In production: indexed DB lookup or cached API response.
+    logger.info("getEvent cache miss — fetching from data source", { slug });
     await new Promise((res) => setTimeout(res, 100));
 
     const event = EVENTS.find((e) => e.slug === slug) ?? null;
     if (event) eventCache.set(cacheKey, event);
+    if (!event) logger.warn("getEvent not found", { slug });
 
     return event;
   } catch (e) {
+    logger.error("getEvent failed", { slug, error: String(e) });
     throw new Error(`Failed to fetch event: ${slug}`, { cause: e });
   }
 }

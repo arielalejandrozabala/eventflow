@@ -210,3 +210,55 @@ Use Next.js `notFound()` function with custom `not-found.tsx` component.
 - Authentication strategy (NextAuth vs. Clerk vs. custom)
 - Deployment platform (Vercel vs. self-hosted)
 - Monitoring solution (Sentry vs. DataDog vs. New Relic)
+
+---
+
+## ADR-008: No Feature Flags (Intentional Simplification)
+
+**Status**: Acknowledged — not implemented
+
+### Context
+Event-based platforms at scale need to control rollouts without deploys: enabling a campaign for one country before others, A/B testing pricing display formats, or killing a feature instantly if it causes issues in production.
+
+### Decision
+Feature flags are not implemented in this project. The focus is on rendering architecture and data layer patterns, not operational tooling.
+
+### What it would look like in production
+
+**Option 1 — Config-driven (simple, no external dependency):**
+```ts
+// lib/config/flags.ts
+export const FLAGS = {
+  showCountdown: process.env.FEATURE_COUNTDOWN === 'true',
+  enableBrazilMarket: process.env.FEATURE_BR_MARKET === 'true',
+} as const
+```
+
+**Option 2 — LaunchDarkly / Statsig (full feature management):**
+```ts
+// Evaluate flag at the edge — no round-trip to origin
+export function proxy(request: Request) {
+  const userId = getCookie(request, 'user_id')
+  const showNewCheckout = ldClient.variation('new-checkout', { key: userId }, false)
+  
+  if (showNewCheckout) {
+    return NextResponse.rewrite(new URL('/checkout-v2', request.url))
+  }
+}
+```
+
+### Where flags would matter in this app
+- **Per-country rollout**: Enable Cyber Monday in `us` before `ar` and `br`
+- **Discount percentage**: Test 20% vs 25% off messaging per region
+- **Cart behavior**: A/B test "Add to cart" vs "Buy now" CTA
+- **Kill switch**: Disable the countdown if the sale is extended without a deploy
+
+### Why a dedicated service over env vars
+- Env vars require a redeploy to change — useless for real-time kill switches
+- LaunchDarkly/Statsig evaluate at request time, support targeting rules (country, user segment, % rollout)
+- Audit trail — you can see who changed what flag and when
+
+### Consequences of not having it
+- Any campaign change (extend sale, change discount %) requires a code deploy
+- No way to do gradual rollouts or A/B tests without infrastructure changes
+- Acceptable for a portfolio project — would be a day-1 requirement in production

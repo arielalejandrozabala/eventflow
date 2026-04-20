@@ -159,7 +159,19 @@ Note: product data (prices, stock) is intentionally **not cached** at the server
 
 ## Live Demo
 
-_Deploy link here_
+[https://eventflow-aaz.vercel.app](https://eventflow-aaz.vercel.app)
+
+### Lighthouse — `/us/event/black-friday` (production)
+
+| Metric | Score |
+|---|---|
+| First Contentful Paint | 0.3s |
+| Largest Contentful Paint | 1.0s |
+| Total Blocking Time | 0ms |
+| Cumulative Layout Shift | 0 |
+| Speed Index | 0.4s |
+
+> Measured on Vercel Edge Network. LCP reflects SSR shell delivery — product carousel loads client-side after initial paint.
 
 ---
 

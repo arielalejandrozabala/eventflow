@@ -1,6 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import Hero from '../Hero'
 
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: ({ src, alt }: { src: string; alt: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} />
+  ),
+}))
+
 describe('Hero', () => {
   const defaultProps = {
     title: 'Black Friday Sale',
@@ -24,9 +32,9 @@ describe('Hero', () => {
     expect(screen.queryByText(/off/i)).not.toBeInTheDocument()
   })
 
-  it('applies background image', () => {
-    const { container } = render(<Hero {...defaultProps} />)
-    const heroDiv = container.querySelector('[role="banner"]')
-    expect(heroDiv).toHaveStyle({ backgroundImage: 'url(https://example.com/hero.jpg)' })
+  it('renders image with correct src', () => {
+    render(<Hero {...defaultProps} />)
+    const img = document.querySelector('img')
+    expect(img).toHaveAttribute('src', 'https://example.com/hero.jpg')
   })
 })

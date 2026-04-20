@@ -1,7 +1,7 @@
 export const revalidate = 60;
 
 import Link from "next/link";
-import { getAllEvents } from "@/lib/data/events";
+import { getAllEvents } from "@/lib/api/events";
 import { COUNTRIES } from "@/lib/constants/countries";
 
 export default async function Home() {

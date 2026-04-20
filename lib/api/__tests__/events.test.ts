@@ -1,6 +1,6 @@
 import { getAllEvents, getEvent } from '../events'
 
-describe('events data layer', () => {
+describe('events API layer', () => {
   describe('getAllEvents', () => {
     it('returns all events', async () => {
       const events = await getAllEvents()
@@ -13,8 +13,7 @@ describe('events data layer', () => {
     it('simulates async behavior', async () => {
       const start = Date.now()
       await getAllEvents()
-      const duration = Date.now() - start
-      expect(duration).toBeGreaterThanOrEqual(100)
+      expect(Date.now() - start).toBeGreaterThanOrEqual(100)
     })
   })
 
@@ -37,11 +36,13 @@ describe('events data layer', () => {
         slug: 'cyber-monday',
         title: 'Cyber Monday',
         description: expect.any(String),
+        expiresAt: expect.any(String),
         products: expect.arrayContaining([
           expect.objectContaining({
             id: expect.any(Number),
             name: expect.any(String),
             price: expect.any(Number),
+            image: expect.any(String),
           }),
         ]),
       })

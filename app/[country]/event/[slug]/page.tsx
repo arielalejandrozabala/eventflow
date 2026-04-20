@@ -1,6 +1,6 @@
 export const revalidate = 30;
 
-import { getEvent, getAllEvents } from "@/lib/data/events";
+import { getEvent, getAllEvents } from "@/lib/api/events";
 import EventDetail from "@/components/EventDetail";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";

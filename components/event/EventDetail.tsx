@@ -1,11 +1,11 @@
 "use client";
 
 import { Event } from "@/lib/types/event";
-import ProductCarousel from "./ProductCarousel";
-import CartDrawer from "./CartDrawer";
-import Hero from "./Hero";
-import Countdown from "./Countdown";
-import Navbar from "./Navbar";
+import ProductCarousel from "@/components/event/ProductCarousel";
+import CartDrawer from "../cart/CartDrawercart/CartDrawer";
+import Hero from "@/components/event/Hero";
+import Countdown from "@/components/event/Countdown";
+import Navbar from "../shared/Navbarnts/shared/Navbar";
 import { CountryCode } from "@/lib/constants/countries";
 
 type Props = {
@@ -17,7 +17,7 @@ export default function EventDetail({ event, country }: Props) {
   return (
     <>
       <Navbar country={country as CountryCode} />
-      
+
       <div className="space-y-8">
         <Hero
           title={event.title}

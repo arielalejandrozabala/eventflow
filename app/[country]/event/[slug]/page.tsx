@@ -1,7 +1,7 @@
 export const revalidate = 30;
 
 import { getEvent, getAllEvents } from "@/lib/api/events";
-import EventDetail from "@/components/EventDetail";
+import EventDetail from "@/components/event/EventDetail";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ALLOWED_COUNTRIES, CountryCode } from "@/lib/constants/countries";

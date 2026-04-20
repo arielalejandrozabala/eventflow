@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
-import CartDrawer from '../CartDrawer'
+import CartDrawer from '../cart/CartDrawer'
 
 jest.mock('next/image', () => ({
   __esModule: true,

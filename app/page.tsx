@@ -1,3 +1,5 @@
+// SSG with ISR — pre-rendered at build time, revalidated every 60s in the background.
+// The event list changes infrequently, so stale-while-revalidate is an acceptable trade-off.
 export const revalidate = 60;
 
 import Link from "next/link";

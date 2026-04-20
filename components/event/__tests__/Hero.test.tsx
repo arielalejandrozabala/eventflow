@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import Hero from '../event/Hero'
+import Hero from '../Hero'
 
 describe('Hero', () => {
   const defaultProps = {

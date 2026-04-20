@@ -1,10 +1,17 @@
-export const revalidate = 30;
+// SSR — renders the event shell (title, description, hero) on every request.
+// Product data is intentionally excluded here — the client fetches it independently
+// via /api/events/[slug]/products so prices and stock are always fresh.
+// This hybrid approach demonstrates: SSR shell + client-side volatile data.
+export const dynamic = "force-dynamic";
 
 import { getEvent, getAllEvents } from "@/lib/api/events";
-import EventDetail from "@/components/event/EventDetail";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ALLOWED_COUNTRIES, CountryCode } from "@/lib/constants/countries";
+import Hero from "@/components/event/Hero";
+import Countdown from "@/components/event/Countdown";
+import Navbar from "@/components/shared/Navbar";
+import ProductsSection from "@/components/event/ProductsSection";
 
 type Props = {
   params: Promise<{ country: string; slug: string }>;
@@ -64,5 +71,21 @@ export default async function EventPage({ params }: Props) {
     notFound();
   }
 
-  return <EventDetail event={event} country={country} />;
+  // Server renders the shell — hero, countdown, navbar arrive in the initial HTML.
+  // ProductsSection is a client island that fetches prices/stock independently.
+  return (
+    <>
+      <Navbar country={country} />
+      <div className="space-y-8">
+        <Hero
+          title={event.title}
+          subtitle={event.description}
+          badge="Up to 25% off"
+          imageUrl={`https://picsum.photos/seed/${event.slug}/1200/400`}
+        />
+        <Countdown expiresAt={event.expiresAt} />
+        <ProductsSection slug={event.slug} country={country} />
+      </div>
+    </>
+  );
 }

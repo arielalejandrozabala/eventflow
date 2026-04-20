@@ -28,15 +28,12 @@ type Props = {
 };
 
 export default function Countdown({ expiresAt }: Props) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => getTimeLeft(expiresAt));
 
   useEffect(() => {
-    setTimeLeft(getTimeLeft(expiresAt));
     const interval = setInterval(() => setTimeLeft(getTimeLeft(expiresAt)), 1000);
     return () => clearInterval(interval);
   }, [expiresAt]);
-
-  if (!timeLeft) return null;
 
   const expired = Object.values(timeLeft).every((v) => v === 0);
 

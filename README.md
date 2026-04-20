@@ -115,9 +115,22 @@ All tests use Jest + React Testing Library.
 ## How to Scale
 
 ### Caching Strategy
-- **Replace mock data** with `fetch()` using Next.js cache tags (`cacheTag`, `revalidateTag`) for fine-grained invalidation
-- **CDN layer**: Deploy to Vercel Edge Network — ISR pages are cached at the CDN layer per region
-- **Redis for hot data**: Cache frequently accessed events in Redis with TTL matching ISR revalidation window
+
+The app implements a layered caching approach:
+
+| Layer | Implementation | TTL |
+|---|---|---|
+| In-memory (server) | `TTLCache` in `lib/cache/eventCache.ts` | 30s |
+| CDN (production) | Vercel Edge Network | Per route config |
+| Client state | Zustand + localStorage | Session |
+
+The in-memory cache (`TTLCache`) simulates what Redis or a CDN cache would do in production — subsequent requests for the same event within the TTL window skip the data layer entirely. In a real scenario, this would be replaced with:
+
+- **Redis (Upstash)** for distributed caching across server instances
+- **Next.js `cacheTag` + `revalidateTag`** for fine-grained invalidation when event data changes
+- **CDN-level caching** at Vercel Edge or Cloudflare for static-ish responses
+
+Note: product data (prices, stock) is intentionally **not cached** at the server layer — it's fetched fresh by the client on every page load via `/api/events/[slug]/products`.
 
 ### Database Layer
 - **Connection pooling**: Use Prisma with PgBouncer or Drizzle with connection pooling to handle high concurrency

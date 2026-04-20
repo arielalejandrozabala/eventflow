@@ -1,4 +1,12 @@
 import { getAllEvents, getEvent } from '../events'
+import { eventCache } from '../../cache/eventCache'
+
+beforeEach(() => {
+  // Clear cache between tests to avoid cross-test contamination
+  eventCache.invalidate('all_events')
+  eventCache.invalidate('event_black-friday')
+  eventCache.invalidate('event_cyber-monday')
+})
 
 describe('events API layer', () => {
   describe('getAllEvents', () => {
@@ -10,10 +18,17 @@ describe('events API layer', () => {
       expect(events[0]).toHaveProperty('products')
     })
 
-    it('simulates async behavior', async () => {
+    it('simulates async behavior on first call', async () => {
       const start = Date.now()
       await getAllEvents()
       expect(Date.now() - start).toBeGreaterThanOrEqual(100)
+    })
+
+    it('returns cached result on second call without latency', async () => {
+      await getAllEvents()
+      const start = Date.now()
+      await getAllEvents()
+      expect(Date.now() - start).toBeLessThan(50)
     })
   })
 
@@ -47,16 +62,20 @@ describe('events API layer', () => {
         ]),
       })
     })
+
+    it('returns cached result on second call without latency', async () => {
+      await getEvent('black-friday')
+      const start = Date.now()
+      await getEvent('black-friday')
+      expect(Date.now() - start).toBeLessThan(50)
+    })
   })
-})
 
   describe('error handling', () => {
     it('getAllEvents throws with descriptive message on failure', async () => {
-      // Simulate data source failure
       jest.spyOn(global, 'setTimeout').mockImplementationOnce(() => {
         throw new Error('DB connection failed')
       })
-
       await expect(getAllEvents()).rejects.toThrow('Failed to fetch events')
     })
 
@@ -64,7 +83,6 @@ describe('events API layer', () => {
       jest.spyOn(global, 'setTimeout').mockImplementationOnce(() => {
         throw new Error('DB connection failed')
       })
-
       await expect(getEvent('black-friday')).rejects.toThrow(
         'Failed to fetch event: black-friday'
       )
@@ -75,7 +93,6 @@ describe('events API layer', () => {
       jest.spyOn(global, 'setTimeout').mockImplementationOnce(() => {
         throw cause
       })
-
       try {
         await getEvent('black-friday')
       } catch (e) {
@@ -84,3 +101,4 @@ describe('events API layer', () => {
       }
     })
   })
+})

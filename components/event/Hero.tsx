@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type Props = {
   title: string;
   subtitle: string;
@@ -9,9 +11,18 @@ export default function Hero({ title, subtitle, badge, imageUrl }: Props) {
   return (
     <div
       className="relative w-full h-80 rounded-2xl overflow-hidden flex items-center justify-center"
-      style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
       role="banner"
     >
+      {/* priority tells Next.js to preload this image — it's the LCP element */}
+      <Image
+        src={imageUrl}
+        alt=""
+        fill
+        priority
+        className="object-cover"
+        sizes="(max-width: 1024px) 100vw, 1024px"
+      />
+
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50" />
 

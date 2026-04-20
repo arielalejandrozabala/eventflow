@@ -49,3 +49,38 @@ describe('events API layer', () => {
     })
   })
 })
+
+  describe('error handling', () => {
+    it('getAllEvents throws with descriptive message on failure', async () => {
+      // Simulate data source failure
+      jest.spyOn(global, 'setTimeout').mockImplementationOnce(() => {
+        throw new Error('DB connection failed')
+      })
+
+      await expect(getAllEvents()).rejects.toThrow('Failed to fetch events')
+    })
+
+    it('getEvent throws with slug in message on failure', async () => {
+      jest.spyOn(global, 'setTimeout').mockImplementationOnce(() => {
+        throw new Error('DB connection failed')
+      })
+
+      await expect(getEvent('black-friday')).rejects.toThrow(
+        'Failed to fetch event: black-friday'
+      )
+    })
+
+    it('getEvent error includes original cause', async () => {
+      const cause = new Error('DB connection failed')
+      jest.spyOn(global, 'setTimeout').mockImplementationOnce(() => {
+        throw cause
+      })
+
+      try {
+        await getEvent('black-friday')
+      } catch (e) {
+        expect(e).toBeInstanceOf(Error)
+        expect((e as Error & { cause: unknown }).cause).toBe(cause)
+      }
+    })
+  })

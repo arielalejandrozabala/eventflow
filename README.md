@@ -174,6 +174,12 @@ For the static parts of the page (title, description, hero), **Partial Prerender
 - Zustand with `persist` gives instant interactions with localStorage durability
 - Decoupled from server state — cart survives navigation without API calls
 
+### Performance optimizations
+- **`React.memo` on `ProductCard`**: When any cart item changes, Zustand notifies all subscribed components. Without `memo`, all N cards in the carousel re-render. With `memo`, React compares props — only the card whose quantity changed re-renders. This is render output caching, not data caching.
+- **`useMemo` for price formatting**: `Intl.NumberFormat` has non-trivial overhead. Memoized per `[price, country]` — only recalculates when those values change.
+- **`useMemo` for cart total**: The drawer re-renders on every store change. Total only recalculates when `items` changes.
+- **Lazy `useState` initializer in Countdown**: `getTimeLeft()` runs on first render (server + client) instead of waiting for `useEffect`, eliminating the mount → update cycle that caused layout shift.
+
 ### Why country in URL vs. geolocation header?
 - **CDN caching**: `/us/event/black-friday` and `/ar/event/black-friday` are different cache keys — no cache poisoning risk
 - **Shareability**: Users can share region-specific links

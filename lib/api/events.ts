@@ -17,15 +17,23 @@ import { EVENTS } from "@/lib/data/events";
 //   }
 
 export async function getAllEvents(): Promise<Event[]> {
-  // Simulates network/DB latency.
-  // In production: DB query with connection pooling or external API fetch.
-  await new Promise((res) => setTimeout(res, 100));
-  return EVENTS;
+  try {
+    // Simulates network/DB latency.
+    // In production: DB query with connection pooling or external API fetch.
+    await new Promise((res) => setTimeout(res, 100));
+    return EVENTS;
+  } catch (e) {
+    throw new Error("Failed to fetch events", { cause: e });
+  }
 }
 
 export async function getEvent(slug: string): Promise<Event | null> {
-  // Simulates network/DB latency.
-  // In production: indexed DB lookup or cached API response.
-  await new Promise((res) => setTimeout(res, 100));
-  return EVENTS.find((e) => e.slug === slug) ?? null;
+  try {
+    // Simulates network/DB latency.
+    // In production: indexed DB lookup or cached API response.
+    await new Promise((res) => setTimeout(res, 100));
+    return EVENTS.find((e) => e.slug === slug) ?? null;
+  } catch (e) {
+    throw new Error(`Failed to fetch event: ${slug}`, { cause: e });
+  }
 }

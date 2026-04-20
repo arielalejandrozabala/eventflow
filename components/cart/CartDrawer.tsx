@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { formatPrice } from "@/lib/utils/currency";
 import Image from "next/image";
@@ -14,7 +14,12 @@ export default function CartDrawer() {
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const country = items[0]?.country ?? "us";
-  const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+
+  // Memoized — avoids recalculating on every render when unrelated state changes.
+  const total = useMemo(
+    () => items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
+    [items]
+  );
 
   // Don't render on server or before hydration
   if (!mounted) return null;

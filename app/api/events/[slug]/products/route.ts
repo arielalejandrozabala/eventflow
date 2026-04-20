@@ -8,12 +8,20 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = await params;
-  const event = await getEvent(slug);
+  try {
+    const { slug } = await params;
+    const event = await getEvent(slug);
 
-  if (!event) {
-    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    if (!event) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(event.products ?? []);
+  } catch (e) {
+    console.error("[GET /api/events/[slug]/products]", e);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json(event.products ?? []);
 }

@@ -1,22 +1,32 @@
 "use client";
 
 import Image from "next/image";
+import { memo, useState, useMemo } from "react";
 import { Product } from "@/lib/types/event";
 import { formatPrice } from "@/lib/utils/currency";
 import { useCartStore } from "@/lib/store/cartStore";
-import { useState } from "react";
 
 type Props = {
   product: Product;
   country: string;
 };
 
-export default function ProductCard({ product, country }: Props) {
+// React.memo prevents unnecessary re-renders of sibling cards.
+// When any cart item changes, Zustand notifies all subscribed components.
+// Without memo: all 4 cards re-render on every cart update.
+// With memo: only the card whose product.id matches the changed item re-renders.
+const ProductCard = memo(function ProductCard({ product, country }: Props) {
   const { addItem, increment, decrement, removeItem, items } = useCartStore();
   const [added, setAdded] = useState(false);
 
   const cartItem = items.find((i) => i.product.id === product.id);
   const quantity = cartItem?.quantity ?? 0;
+
+  // Memoized — price formatting is pure and only depends on price + country.
+  const formattedPrice = useMemo(
+    () => formatPrice(product.price, country),
+    [product.price, country]
+  );
 
   function handleAdd() {
     addItem(product, country);
@@ -43,8 +53,8 @@ export default function ProductCard({ product, country }: Props) {
         <h2 className="font-semibold text-gray-900 leading-tight line-clamp-2">
           {product.name}
         </h2>
-        <p className="text-xl font-bold text-gray-900" aria-label={`Price: ${formatPrice(product.price, country)}`}>
-          {formatPrice(product.price, country)}
+        <p className="text-xl font-bold text-gray-900" aria-label={`Price: ${formattedPrice}`}>
+          {formattedPrice}
         </p>
 
         {quantity === 0 ? (
@@ -89,4 +99,6 @@ export default function ProductCard({ product, country }: Props) {
       </div>
     </article>
   );
-}
+});
+
+export default ProductCard;
